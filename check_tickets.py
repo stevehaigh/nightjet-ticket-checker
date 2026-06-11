@@ -12,7 +12,7 @@ Configuration is via environment variables:
     GMAIL_APP_PASSWORD   Gmail app password (https://myaccount.google.com/apppasswords)
     RECIPIENT_EMAIL      where to send alerts (default: GMAIL_ADDRESS)
     HEARTBEAT_WEEKDAY    weekday (0=Mon .. 6=Sun) to send an "I'm alive" email,
-                         empty string to disable (default 6)
+                         "off" to disable (default 6)
 """
 
 import base64
@@ -103,8 +103,8 @@ def send_email(subject: str, body: str) -> None:
 
 
 def is_heartbeat_day(today: date) -> bool:
-    weekday = os.environ.get("HEARTBEAT_WEEKDAY", "6")
-    return weekday != "" and today.weekday() == int(weekday)
+    weekday = os.environ.get("HEARTBEAT_WEEKDAY") or "6"
+    return weekday.isdigit() and today.weekday() == int(weekday)
 
 
 def validate_date(date_str: str) -> date:
@@ -122,8 +122,9 @@ def main() -> None:
         raise RuntimeError("DATE_TO_CHECK is not set")
     validate_date(date_to_check)
 
-    from_station = os.environ.get("FROM_STATION", "8400058")
-    to_station = os.environ.get("TO_STATION", "8100108")
+    # unset GitHub repo variables arrive as empty strings, so `or` not get-default
+    from_station = os.environ.get("FROM_STATION") or "8400058"
+    to_station = os.environ.get("TO_STATION") or "8100108"
 
     connections = fetch_connections(from_station, to_station, date_to_check)
     log.info("Found %d connection(s) for %s", len(connections), date_to_check)

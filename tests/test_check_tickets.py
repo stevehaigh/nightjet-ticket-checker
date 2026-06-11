@@ -92,10 +92,15 @@ class TestHeartbeatDay:
         thursday = date(2026, 6, 11)
         assert check_tickets.is_heartbeat_day(thursday) is False
 
-    def test_empty_disables(self, monkeypatch):
-        monkeypatch.setenv("HEARTBEAT_WEEKDAY", "")
+    def test_off_disables(self, monkeypatch):
+        monkeypatch.setenv("HEARTBEAT_WEEKDAY", "off")
         sunday = date(2026, 6, 14)
         assert check_tickets.is_heartbeat_day(sunday) is False
+
+    def test_empty_falls_back_to_sunday_default(self, monkeypatch):
+        monkeypatch.setenv("HEARTBEAT_WEEKDAY", "")
+        sunday = date(2026, 6, 14)
+        assert check_tickets.is_heartbeat_day(sunday) is True
 
 
 class TestMain:
@@ -103,7 +108,7 @@ class TestMain:
     def env(self, monkeypatch):
         future = (date.today() + timedelta(days=30)).isoformat()
         monkeypatch.setenv("DATE_TO_CHECK", future)
-        monkeypatch.setenv("HEARTBEAT_WEEKDAY", "")
+        monkeypatch.setenv("HEARTBEAT_WEEKDAY", "off")
         self.date_to_check = future
 
     def test_sends_alert_when_available(self):
