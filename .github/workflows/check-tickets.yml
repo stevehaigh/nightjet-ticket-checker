@@ -1,0 +1,38 @@
+name: Check Nightjet tickets
+
+on:
+  schedule:
+    - cron: "37 5 * * *"  # daily at 05:37 UTC
+  workflow_dispatch:
+
+permissions:
+  actions: write  # needed by the keepalive step to re-enable the schedule
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - run: pip install -r requirements.txt
+
+      - name: Check ticket availability
+        env:
+          DATE_TO_CHECK: ${{ vars.DATE_TO_CHECK }}
+          FROM_STATION: ${{ vars.FROM_STATION }}
+          TO_STATION: ${{ vars.TO_STATION }}
+          HEARTBEAT_WEEKDAY: ${{ vars.HEARTBEAT_WEEKDAY }}
+          GMAIL_ADDRESS: ${{ vars.GMAIL_ADDRESS }}
+          RECIPIENT_EMAIL: ${{ vars.RECIPIENT_EMAIL }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python check_tickets.py
+
+      # GitHub disables cron schedules after 60 days without repo activity;
+      # this re-enables the workflow via the API on every run.
+      - name: Keepalive
+        if: always()
+        uses: gautamkrishnar/keepalive-workflow@v2
