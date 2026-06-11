@@ -32,7 +32,9 @@ jobs:
         run: python check_tickets.py
 
       # GitHub disables cron schedules after 60 days without repo activity;
-      # this re-enables the workflow via the API on every run.
+      # re-enabling the workflow on every run resets that timer.
       - name: Keepalive
         if: always()
-        uses: gautamkrishnar/keepalive-workflow@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/check-tickets.yml/enable"
