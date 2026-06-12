@@ -103,6 +103,24 @@ class TestHeartbeatDay:
         assert check_tickets.is_heartbeat_day(sunday) is True
 
 
+class TestSendEmail:
+    def test_multiple_recipients(self, monkeypatch):
+        monkeypatch.setenv("GMAIL_ADDRESS", "me@gmail.com")
+        monkeypatch.setenv("GMAIL_APP_PASSWORD", "pw")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "a@example.com, b@example.com")
+        with patch.object(check_tickets.smtplib, "SMTP_SSL") as smtp:
+            check_tickets.send_email("subj", "body")
+        server = smtp.return_value.__enter__.return_value
+        msg = server.send_message.call_args.args[0]
+        assert msg["To"] == "a@example.com, b@example.com"
+
+    def test_missing_creds_raises(self, monkeypatch):
+        monkeypatch.delenv("GMAIL_ADDRESS", raising=False)
+        monkeypatch.delenv("GMAIL_APP_PASSWORD", raising=False)
+        with pytest.raises(RuntimeError, match="cannot send email"):
+            check_tickets.send_email("subj", "body")
+
+
 class TestMain:
     @pytest.fixture(autouse=True)
     def env(self, monkeypatch):

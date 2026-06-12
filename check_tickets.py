@@ -10,7 +10,8 @@ Configuration is via environment variables:
     TO_STATION           EVA number of arrival station (default 8100108, Innsbruck Hbf)
     GMAIL_ADDRESS        Gmail address used to send mail
     GMAIL_APP_PASSWORD   Gmail app password (https://myaccount.google.com/apppasswords)
-    RECIPIENT_EMAIL      where to send alerts (default: GMAIL_ADDRESS)
+    RECIPIENT_EMAIL      where to send alerts, comma-separated for multiple
+                         (default: GMAIL_ADDRESS)
     HEARTBEAT_WEEKDAY    weekday (0=Mon .. 6=Sun) to send an "I'm alive" email,
                          "off" to disable (default 6)
 """
@@ -89,17 +90,21 @@ def send_email(subject: str, body: str) -> None:
         raise RuntimeError(
             "GMAIL_ADDRESS / GMAIL_APP_PASSWORD not set - cannot send email"
         )
-    recipient = os.environ.get("RECIPIENT_EMAIL") or sender
+    recipients = [
+        r.strip()
+        for r in (os.environ.get("RECIPIENT_EMAIL") or sender).split(",")
+        if r.strip()
+    ]
 
     msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = sender
-    msg["To"] = recipient
+    msg["To"] = ", ".join(recipients)
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as server:
         server.login(sender, password)
         server.send_message(msg)
-    log.info("Email sent to %s: %s", recipient, subject)
+    log.info("Email sent to %s: %s", ", ".join(recipients), subject)
 
 
 def is_heartbeat_day(today: date) -> bool:

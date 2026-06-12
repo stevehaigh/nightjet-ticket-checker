@@ -34,7 +34,7 @@ Variables) — editable any time without touching code:
 | `FROM_STATION` | Departure station EVA number | `8400058` (Amsterdam Centraal) |
 | `TO_STATION` | Arrival station EVA number | `8100108` (Innsbruck Hbf) |
 | `GMAIL_ADDRESS` | Gmail account that sends the alert | required for email |
-| `RECIPIENT_EMAIL` | Where alerts go | same as `GMAIL_ADDRESS` |
+| `RECIPIENT_EMAIL` | Where alerts go, comma-separated for multiple | same as `GMAIL_ADDRESS` |
 | `HEARTBEAT_WEEKDAY` | Weekly "still alive" email day, `0`=Mon … `6`=Sun, `off` to disable | `6` |
 
 And one **secret**:
