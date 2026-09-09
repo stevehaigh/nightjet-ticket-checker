@@ -1,9 +1,6 @@
 name: Check Nightjet tickets
 
-on:
-  schedule:
-    - cron: "37 5 * * *"  # daily at 05:37 UTC
-  workflow_dispatch:
+on: []
 
 permissions:
   actions: write  # needed by the keepalive step to re-enable the schedule
